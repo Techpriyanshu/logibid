@@ -1,0 +1,96 @@
+-- Master-data-only restore generated from a local MySQL dump.
+-- Seed rows are from an August 2026 backup; verify they are current before live bidding.
+-- Does not drop tables or overwrite rows that already exist.
+-- Select the intended database before importing this file.
+
+CREATE TABLE IF NOT EXISTS `zones` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(64) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `zones` VALUES (1,'NORTH','North Zone',1,'2026-08-18 03:42:07','2026-08-18 03:42:07'),(2,'SOUTH','South Zone',1,'2026-08-18 03:42:07','2026-08-18 03:42:07'),(3,'EAST','East Zone',1,'2026-08-18 03:42:07','2026-08-18 03:42:07'),(4,'WEST','West Zone',1,'2026-08-18 03:42:07','2026-08-18 03:42:07');
+
+CREATE TABLE IF NOT EXISTS `plants` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `zone_id` int unsigned NOT NULL,
+  `code` varchar(64) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  KEY `zone_id` (`zone_id`),
+  CONSTRAINT `plants_ibfk_1` FOREIGN KEY (`zone_id`) REFERENCES `zones` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `plants` VALUES (1,1,'TANDA','Tanda Cement Plant',1,'2026-08-18 03:42:07','2026-08-18 03:42:07');
+
+CREATE TABLE IF NOT EXISTS `depots` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `metadata` json DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
+  UNIQUE KEY `ux_depots_code` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `depots` VALUES (1,'AYODHYA','AYODHYA',NULL,'2026-08-17 09:38:51','2026-08-17 09:38:51'),(2,'GONDA','GONDA',NULL,'2026-08-17 09:40:18','2026-08-17 09:40:18'),(3,'SITAPUR','SITAPUR',NULL,'2026-08-17 09:40:37','2026-08-17 09:40:37'),(4,'LUCKNOW','LUCKNOW','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02'),(5,'HARDOI','HARDOI','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02'),(6,'GORAKHPUR','GORAKHPUR','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02'),(7,'MAU','MAU','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02'),(8,'DEORIA','DEORIA','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02'),(9,'BASTI','BASTI','{\"quantity_only\": true}','2026-08-17 09:41:02','2026-08-17 09:41:02');
+
+CREATE TABLE IF NOT EXISTS `plant_depots` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `plant_id` int unsigned NOT NULL,
+  `depot_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sap_depot_id` varchar(32) DEFAULT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_plant_depot` (`plant_id`,`depot_code`),
+  KEY `depot_code` (`depot_code`),
+  CONSTRAINT `plant_depots_ibfk_1` FOREIGN KEY (`plant_id`) REFERENCES `plants` (`id`),
+  CONSTRAINT `plant_depots_ibfk_2` FOREIGN KEY (`depot_code`) REFERENCES `depots` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `plant_depots` VALUES (1,1,'AYODHYA','6602',2),(2,1,'BASTI','6637',9),(3,1,'DEORIA','6624',8),(4,1,'GONDA','6606',4),(5,1,'GORAKHPUR','6622',6),(6,1,'HARDOI','6608',5),(7,1,'LUCKNOW','6601',1),(8,1,'MAU','6623',7),(9,1,'SITAPUR','6605',3);
+
+CREATE TABLE IF NOT EXISTS `depot_destinations` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `depot_code` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `destination` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sort_order` int NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_depot_code` (`depot_code`)
+) ENGINE=InnoDB AUTO_INCREMENT=61 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `depot_destinations` VALUES (1,'AYODHYA','AYODHYA',1,'2026-08-17 09:40:06'),(2,'AYODHYA','SALARPUR (FZB)',2,'2026-08-17 09:40:06'),(3,'AYODHYA','DYORHI BAZAR',3,'2026-08-17 09:40:06'),(4,'AYODHYA','KHAJURAHAT',4,'2026-08-17 09:40:06'),(5,'AYODHYA','KUMARGANJ',5,'2026-08-17 09:40:06'),(6,'AYODHYA','MASAUDHA',6,'2026-08-17 09:40:06'),(7,'AYODHYA','KUCHERA BAZAR',7,'2026-08-17 09:40:06'),(8,'AYODHYA','RUDAULI',8,'2026-08-17 09:40:06'),(9,'AYODHYA','SOHAWAL',9,'2026-08-17 09:40:06'),(10,'AYODHYA','POORA BAZAR',10,'2026-08-17 09:40:06'),(11,'AYODHYA','MILKIPUR (FZB)',11,'2026-08-17 09:40:06'),(12,'AYODHYA','MAWAI',12,'2026-08-17 09:40:06'),(13,'AYODHYA','RAJE SULTANPUR (AMB)',13,'2026-08-17 09:40:06'),(14,'AYODHYA','RUDAULI-DUMP',14,'2026-08-17 09:40:06'),(15,'AYODHYA','BEEKAPUR',15,'2026-08-17 09:40:06'),(16,'AYODHYA','RANIMAU (FZBD)',16,'2026-08-17 09:40:06'),(17,'AYODHYA','BHETE',17,'2026-08-17 09:40:06'),(18,'AYODHYA','DEORIA BAZAR',18,'2026-08-17 09:40:06'),(19,'AYODHYA','JAHANGIR GANJ',19,'2026-08-17 09:40:06'),(20,'AYODHYA','AKBARPUR (ABD)',20,'2026-08-17 09:40:06'),(21,'AYODHYA','MAHRUWA',21,'2026-08-17 09:40:06'),(22,'AYODHYA','MALIPUR (AMD NAGAR)',22,'2026-08-17 09:40:06'),(23,'AYODHYA','RAMGARH (AMD NAGAR)',23,'2026-08-17 09:40:06'),(24,'AYODHYA','BASKARI',24,'2026-08-17 09:40:06'),(25,'AYODHYA','Jalalpur',25,'2026-08-17 09:40:06'),(26,'AYODHYA','NEORA',26,'2026-08-17 09:40:06'),(27,'AYODHYA','BANDIPUR',27,'2026-08-17 09:40:06'),(28,'AYODHYA','RAFIGANJ',28,'2026-08-17 09:40:06'),(29,'AYODHYA','CHATURI PATTI',29,'2026-08-17 09:40:06'),(30,'AYODHYA','RAMNAGAR MAHUWARE',30,'2026-08-17 09:40:06'),(31,'AYODHYA','RAMPUR SARKARWAL',31,'2026-08-17 09:40:06'),(32,'AYODHYA','MAYA BAZAR',32,'2026-08-17 09:40:06'),(33,'AYODHYA','CHAURE BAZAR',33,'2026-08-17 09:40:06'),(34,'AYODHYA','KHANDASA',34,'2026-08-17 09:40:06'),(35,'AYODHYA','BELSAR',35,'2026-08-17 09:40:06'),(36,'AYODHYA','FAIZABAD-1-DUMP',36,'2026-08-17 09:40:06'),(37,'GONDA','KAISAR GANJ',1,'2026-08-17 09:40:28'),(38,'GONDA','DHANEPUR',2,'2026-08-17 09:40:28'),(39,'GONDA','GONDA',3,'2026-08-17 09:40:28'),(40,'GONDA','WAZIR GANJ',4,'2026-08-17 09:40:28'),(41,'GONDA','DOMARIYAGANJ (DMRGJ)',5,'2026-08-17 09:40:28'),(42,'GONDA','KHARGUPUR IMILIA',6,'2026-08-17 09:40:28'),(43,'GONDA','TARABGANJ',7,'2026-08-17 09:40:28'),(44,'GONDA','COLONEL GANJ',8,'2026-08-17 09:40:28'),(45,'GONDA','BALAPUR',9,'2026-08-17 09:40:28'),(46,'GONDA','HUSAINABAD GRINT',10,'2026-08-17 09:40:28'),(47,'GONDA','SONOLI MOHAMMADPUR',11,'2026-08-17 09:40:28'),(48,'SITAPUR','SITAPUR',1,'2026-08-17 09:40:51'),(49,'SITAPUR','LAKHIMPUR',2,'2026-08-17 09:40:51'),(50,'SITAPUR','LODHAURI',3,'2026-08-17 09:40:51'),(51,'SITAPUR','KHAMARIA PANDIT',4,'2026-08-17 09:40:51'),(52,'SITAPUR','MOHAMMADI',5,'2026-08-17 09:40:51'),(53,'SITAPUR','MAHOLI (MISRIKK)',6,'2026-08-17 09:40:51'),(54,'SITAPUR','GOLA GOKARANNATH',7,'2026-08-17 09:40:51'),(55,'SITAPUR','RAMIA BEAHAR',8,'2026-08-17 09:40:51'),(56,'SITAPUR','MAILANI',9,'2026-08-17 09:40:51'),(57,'SITAPUR','PALIYA KALAN',10,'2026-08-17 09:40:51'),(58,'SITAPUR','AJAYPUR',11,'2026-08-17 09:40:51'),(59,'SITAPUR','MITAULI',12,'2026-08-17 09:40:51'),(60,'SITAPUR','KASTA',13,'2026-08-17 09:40:51');
+
+CREATE TABLE IF NOT EXISTS `tonnage_options` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `value` int NOT NULL,
+  `label` varchar(32) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `sort_order` int NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `value` (`value`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO `tonnage_options` VALUES (1,18,'18T',1,1),(2,25,'25T',1,2),(3,30,'30T',1,3),(4,32,'32T',1,4),(5,40,'40T',1,5),(6,42,'42T',1,6);
+
+CREATE TABLE IF NOT EXISTS `master_data_status` (
+  `id` tinyint unsigned NOT NULL PRIMARY KEY,
+  `source` varchar(32) NOT NULL,
+  `snapshot_date` date DEFAULT NULL,
+  `verified` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT IGNORE INTO `master_data_status` (`id`, `source`, `snapshot_date`, `verified`)
+VALUES (1, 'snapshot', '2026-08-18', 0);

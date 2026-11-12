@@ -1,0 +1,656 @@
+{
+  "source": "local-mysql-backup",
+  "snapshot_date": "2026-08-18",
+  "tables": {
+    "zones": [
+      {
+        "id": 1,
+        "code": "NORTH",
+        "name": "North Zone",
+        "is_active": 1,
+        "created_at": "2026-08-18 03:42:07",
+        "updated_at": "2026-08-18 03:42:07"
+      },
+      {
+        "id": 2,
+        "code": "SOUTH",
+        "name": "South Zone",
+        "is_active": 1,
+        "created_at": "2026-08-18 03:42:07",
+        "updated_at": "2026-08-18 03:42:07"
+      },
+      {
+        "id": 3,
+        "code": "EAST",
+        "name": "East Zone",
+        "is_active": 1,
+        "created_at": "2026-08-18 03:42:07",
+        "updated_at": "2026-08-18 03:42:07"
+      },
+      {
+        "id": 4,
+        "code": "WEST",
+        "name": "West Zone",
+        "is_active": 1,
+        "created_at": "2026-08-18 03:42:07",
+        "updated_at": "2026-08-18 03:42:07"
+      }
+    ],
+    "plants": [
+      {
+        "id": 1,
+        "zone_id": 1,
+        "code": "TANDA",
+        "name": "Tanda Cement Plant",
+        "is_active": 1,
+        "created_at": "2026-08-18 03:42:07",
+        "updated_at": "2026-08-18 03:42:07"
+      }
+    ],
+    "depots": [
+      {
+        "id": 1,
+        "code": "AYODHYA",
+        "name": "AYODHYA",
+        "metadata": null,
+        "created_at": "2026-08-17 09:38:51",
+        "updated_at": "2026-08-17 09:38:51"
+      },
+      {
+        "id": 2,
+        "code": "GONDA",
+        "name": "GONDA",
+        "metadata": null,
+        "created_at": "2026-08-17 09:40:18",
+        "updated_at": "2026-08-17 09:40:18"
+      },
+      {
+        "id": 3,
+        "code": "SITAPUR",
+        "name": "SITAPUR",
+        "metadata": null,
+        "created_at": "2026-08-17 09:40:37",
+        "updated_at": "2026-08-17 09:40:37"
+      },
+      {
+        "id": 4,
+        "code": "LUCKNOW",
+        "name": "LUCKNOW",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      },
+      {
+        "id": 5,
+        "code": "HARDOI",
+        "name": "HARDOI",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      },
+      {
+        "id": 6,
+        "code": "GORAKHPUR",
+        "name": "GORAKHPUR",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      },
+      {
+        "id": 7,
+        "code": "MAU",
+        "name": "MAU",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      },
+      {
+        "id": 8,
+        "code": "DEORIA",
+        "name": "DEORIA",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      },
+      {
+        "id": 9,
+        "code": "BASTI",
+        "name": "BASTI",
+        "metadata": "{\"quantity_only\": true}",
+        "created_at": "2026-08-17 09:41:02",
+        "updated_at": "2026-08-17 09:41:02"
+      }
+    ],
+    "plant_depots": [
+      {
+        "id": 1,
+        "plant_id": 1,
+        "depot_code": "AYODHYA",
+        "sap_depot_id": "6602",
+        "sort_order": 2
+      },
+      {
+        "id": 2,
+        "plant_id": 1,
+        "depot_code": "BASTI",
+        "sap_depot_id": "6637",
+        "sort_order": 9
+      },
+      {
+        "id": 3,
+        "plant_id": 1,
+        "depot_code": "DEORIA",
+        "sap_depot_id": "6624",
+        "sort_order": 8
+      },
+      {
+        "id": 4,
+        "plant_id": 1,
+        "depot_code": "GONDA",
+        "sap_depot_id": "6606",
+        "sort_order": 4
+      },
+      {
+        "id": 5,
+        "plant_id": 1,
+        "depot_code": "GORAKHPUR",
+        "sap_depot_id": "6622",
+        "sort_order": 6
+      },
+      {
+        "id": 6,
+        "plant_id": 1,
+        "depot_code": "HARDOI",
+        "sap_depot_id": "6608",
+        "sort_order": 5
+      },
+      {
+        "id": 7,
+        "plant_id": 1,
+        "depot_code": "LUCKNOW",
+        "sap_depot_id": "6601",
+        "sort_order": 1
+      },
+      {
+        "id": 8,
+        "plant_id": 1,
+        "depot_code": "MAU",
+        "sap_depot_id": "6623",
+        "sort_order": 7
+      },
+      {
+        "id": 9,
+        "plant_id": 1,
+        "depot_code": "SITAPUR",
+        "sap_depot_id": "6605",
+        "sort_order": 3
+      }
+    ],
+    "depot_destinations": [
+      {
+        "id": 1,
+        "depot_code": "AYODHYA",
+        "destination": "AYODHYA",
+        "sort_order": 1,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 2,
+        "depot_code": "AYODHYA",
+        "destination": "SALARPUR (FZB)",
+        "sort_order": 2,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 3,
+        "depot_code": "AYODHYA",
+        "destination": "DYORHI BAZAR",
+        "sort_order": 3,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 4,
+        "depot_code": "AYODHYA",
+        "destination": "KHAJURAHAT",
+        "sort_order": 4,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 5,
+        "depot_code": "AYODHYA",
+        "destination": "KUMARGANJ",
+        "sort_order": 5,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 6,
+        "depot_code": "AYODHYA",
+        "destination": "MASAUDHA",
+        "sort_order": 6,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 7,
+        "depot_code": "AYODHYA",
+        "destination": "KUCHERA BAZAR",
+        "sort_order": 7,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 8,
+        "depot_code": "AYODHYA",
+        "destination": "RUDAULI",
+        "sort_order": 8,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 9,
+        "depot_code": "AYODHYA",
+        "destination": "SOHAWAL",
+        "sort_order": 9,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 10,
+        "depot_code": "AYODHYA",
+        "destination": "POORA BAZAR",
+        "sort_order": 10,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 11,
+        "depot_code": "AYODHYA",
+        "destination": "MILKIPUR (FZB)",
+        "sort_order": 11,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 12,
+        "depot_code": "AYODHYA",
+        "destination": "MAWAI",
+        "sort_order": 12,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 13,
+        "depot_code": "AYODHYA",
+        "destination": "RAJE SULTANPUR (AMB)",
+        "sort_order": 13,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 14,
+        "depot_code": "AYODHYA",
+        "destination": "RUDAULI-DUMP",
+        "sort_order": 14,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 15,
+        "depot_code": "AYODHYA",
+        "destination": "BEEKAPUR",
+        "sort_order": 15,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 16,
+        "depot_code": "AYODHYA",
+        "destination": "RANIMAU (FZBD)",
+        "sort_order": 16,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 17,
+        "depot_code": "AYODHYA",
+        "destination": "BHETE",
+        "sort_order": 17,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 18,
+        "depot_code": "AYODHYA",
+        "destination": "DEORIA BAZAR",
+        "sort_order": 18,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 19,
+        "depot_code": "AYODHYA",
+        "destination": "JAHANGIR GANJ",
+        "sort_order": 19,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 20,
+        "depot_code": "AYODHYA",
+        "destination": "AKBARPUR (ABD)",
+        "sort_order": 20,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 21,
+        "depot_code": "AYODHYA",
+        "destination": "MAHRUWA",
+        "sort_order": 21,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 22,
+        "depot_code": "AYODHYA",
+        "destination": "MALIPUR (AMD NAGAR)",
+        "sort_order": 22,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 23,
+        "depot_code": "AYODHYA",
+        "destination": "RAMGARH (AMD NAGAR)",
+        "sort_order": 23,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 24,
+        "depot_code": "AYODHYA",
+        "destination": "BASKARI",
+        "sort_order": 24,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 25,
+        "depot_code": "AYODHYA",
+        "destination": "Jalalpur",
+        "sort_order": 25,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 26,
+        "depot_code": "AYODHYA",
+        "destination": "NEORA",
+        "sort_order": 26,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 27,
+        "depot_code": "AYODHYA",
+        "destination": "BANDIPUR",
+        "sort_order": 27,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 28,
+        "depot_code": "AYODHYA",
+        "destination": "RAFIGANJ",
+        "sort_order": 28,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 29,
+        "depot_code": "AYODHYA",
+        "destination": "CHATURI PATTI",
+        "sort_order": 29,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 30,
+        "depot_code": "AYODHYA",
+        "destination": "RAMNAGAR MAHUWARE",
+        "sort_order": 30,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 31,
+        "depot_code": "AYODHYA",
+        "destination": "RAMPUR SARKARWAL",
+        "sort_order": 31,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 32,
+        "depot_code": "AYODHYA",
+        "destination": "MAYA BAZAR",
+        "sort_order": 32,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 33,
+        "depot_code": "AYODHYA",
+        "destination": "CHAURE BAZAR",
+        "sort_order": 33,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 34,
+        "depot_code": "AYODHYA",
+        "destination": "KHANDASA",
+        "sort_order": 34,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 35,
+        "depot_code": "AYODHYA",
+        "destination": "BELSAR",
+        "sort_order": 35,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 36,
+        "depot_code": "AYODHYA",
+        "destination": "FAIZABAD-1-DUMP",
+        "sort_order": 36,
+        "created_at": "2026-08-17 09:40:06"
+      },
+      {
+        "id": 37,
+        "depot_code": "GONDA",
+        "destination": "KAISAR GANJ",
+        "sort_order": 1,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 38,
+        "depot_code": "GONDA",
+        "destination": "DHANEPUR",
+        "sort_order": 2,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 39,
+        "depot_code": "GONDA",
+        "destination": "GONDA",
+        "sort_order": 3,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 40,
+        "depot_code": "GONDA",
+        "destination": "WAZIR GANJ",
+        "sort_order": 4,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 41,
+        "depot_code": "GONDA",
+        "destination": "DOMARIYAGANJ (DMRGJ)",
+        "sort_order": 5,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 42,
+        "depot_code": "GONDA",
+        "destination": "KHARGUPUR IMILIA",
+        "sort_order": 6,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 43,
+        "depot_code": "GONDA",
+        "destination": "TARABGANJ",
+        "sort_order": 7,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 44,
+        "depot_code": "GONDA",
+        "destination": "COLONEL GANJ",
+        "sort_order": 8,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 45,
+        "depot_code": "GONDA",
+        "destination": "BALAPUR",
+        "sort_order": 9,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 46,
+        "depot_code": "GONDA",
+        "destination": "HUSAINABAD GRINT",
+        "sort_order": 10,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 47,
+        "depot_code": "GONDA",
+        "destination": "SONOLI MOHAMMADPUR",
+        "sort_order": 11,
+        "created_at": "2026-08-17 09:40:28"
+      },
+      {
+        "id": 48,
+        "depot_code": "SITAPUR",
+        "destination": "SITAPUR",
+        "sort_order": 1,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 49,
+        "depot_code": "SITAPUR",
+        "destination": "LAKHIMPUR",
+        "sort_order": 2,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 50,
+        "depot_code": "SITAPUR",
+        "destination": "LODHAURI",
+        "sort_order": 3,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 51,
+        "depot_code": "SITAPUR",
+        "destination": "KHAMARIA PANDIT",
+        "sort_order": 4,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 52,
+        "depot_code": "SITAPUR",
+        "destination": "MOHAMMADI",
+        "sort_order": 5,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 53,
+        "depot_code": "SITAPUR",
+        "destination": "MAHOLI (MISRIKK)",
+        "sort_order": 6,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 54,
+        "depot_code": "SITAPUR",
+        "destination": "GOLA GOKARANNATH",
+        "sort_order": 7,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 55,
+        "depot_code": "SITAPUR",
+        "destination": "RAMIA BEAHAR",
+        "sort_order": 8,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 56,
+        "depot_code": "SITAPUR",
+        "destination": "MAILANI",
+        "sort_order": 9,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 57,
+        "depot_code": "SITAPUR",
+        "destination": "PALIYA KALAN",
+        "sort_order": 10,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 58,
+        "depot_code": "SITAPUR",
+        "destination": "AJAYPUR",
+        "sort_order": 11,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 59,
+        "depot_code": "SITAPUR",
+        "destination": "MITAULI",
+        "sort_order": 12,
+        "created_at": "2026-08-17 09:40:51"
+      },
+      {
+        "id": 60,
+        "depot_code": "SITAPUR",
+        "destination": "KASTA",
+        "sort_order": 13,
+        "created_at": "2026-08-17 09:40:51"
+      }
+    ],
+    "tonnage_options": [
+      {
+        "id": 1,
+        "value": 18,
+        "label": "18T",
+        "is_active": 1,
+        "sort_order": 1
+      },
+      {
+        "id": 2,
+        "value": 25,
+        "label": "25T",
+        "is_active": 1,
+        "sort_order": 2
+      },
+      {
+        "id": 3,
+        "value": 30,
+        "label": "30T",
+        "is_active": 1,
+        "sort_order": 3
+      },
+      {
+        "id": 4,
+        "value": 32,
+        "label": "32T",
+        "is_active": 1,
+        "sort_order": 4
+      },
+      {
+        "id": 5,
+        "value": 40,
+        "label": "40T",
+        "is_active": 1,
+        "sort_order": 5
+      },
+      {
+        "id": 6,
+        "value": 42,
+        "label": "42T",
+        "is_active": 1,
+        "sort_order": 6
+      }
+    ]
+  }
+}

@@ -1,0 +1,153 @@
+# Copy to application.yaml and adjust as needed.
+# See CONFIG_SPEC.md for full specification.
+
+base_url: "https://www.eye2serve.com:9001/sap/bc/ui5_ui5/ui2/ushell/shells/abap/FioriLaunchpad.html"
+ship_from_plant: "TANDA CEMENT WORKS"
+bid_discount_percent: 2
+search_retry_interval_seconds: 10
+timer_poll_interval_seconds: 0.1
+page_load_timeout_seconds: 30
+element_wait_timeout_seconds: 10
+post_login_wait_seconds: 6
+
+parallel:
+  max_workers: 4
+  shutdown_timeout_seconds: 90
+
+browser:
+  headless: false
+  binary_path: "C:/Program Files/BraveSoftware/Brave-Browser/Application/brave.exe"
+  window_size: "1920,1080"
+
+# Logging — multi-file routing (logging-only; does not affect bidding)
+logging:
+  general_log_file_enabled: true
+  general_log_dir: "logs/general"
+  general_console_enabled: true
+  execution_phase_file_enabled: true
+  execution_phase_dir: "logs/execution_phase"
+  monitoring_log_enabled: true
+  monitoring_log_dir: "logs/monitoring"
+  timer_log_enabled: true
+  timer_log_dir: "logs/timer"
+  rank_log_enabled: true
+  rank_log_dir: "logs/rank"
+  rotation_log_enabled: true
+  rotation_log_dir: "logs/rotation"
+  start_in_log_file_enabled: true
+  start_in_log_dir: "logs/start_in"
+  errors_log_enabled: true
+  errors_log_dir: "logs/errors"
+
+# Execution-centric logging (All_logs) — additive; legacy fan-out unchanged
+execution_logging:
+  enabled: true
+  all_logs_root: "logs/All_logs"
+  legacy_fanout_unchanged: true
+  timer_heartbeat_seconds: 5.0
+  timer_info_raw_polls: false
+  console_echo: false
+
+# Operator Chrome foreground rotation (UI only). No effect on bidding.
+# Starts only when enabled and more than one depot is running.
+# freeze_on_execution: pause switching while any leg is executing / waiting_rank.
+window_rotation:
+  enabled: true
+  interval_seconds: 5
+  freeze_on_execution: true
+
+# Independent Start In observer (investigation only; does not affect bidding).
+# Logs every sample_interval_seconds while Starts In is visible; freeze after N unchanged samples.
+start_in_observer:
+  enabled: true
+  sample_interval_seconds: 5
+  poll_interval_seconds: 0.5
+  freeze_unchanged_samples: 2
+
+# Tonnage-wise excluded SPI (global; exact case-sensitive match at plan time per leg).
+excluded_spi_by_tonnage:
+  18: "1153-BAG-AL/REGULAR/DEALER/MCV1"
+  25: "1154-BAG-AL/REGULAR/DEALER/MCV2"
+  30: "1157-BAG-AL/REGULAR/DEALER/MCV3"
+  32: "1156-BAG-AL/REGULAR/DEALER/HCV2"
+  35: "1156-BAG-AL/REGULAR/DEALER/HCV2"
+  41: "1156-BAG-AL/REGULAR/DEALER/HCV2"
+
+# Depot-wise excluded companies (exact normalized match after SPI filter).
+excluded_companies_by_depot:
+  AYODHYA:
+    - "ANJU TRADERS"
+    - "BHIM LAL JAISWAL"
+    - "DWI ENTERPRISES (SIS)"
+    - "JAISWAL TRADING COMPANY"
+    - "MISHRA BUILDING MATERIAL"
+    - "PAHALWAN TRADERS"
+    - "RAGHAV TRADERS"
+    - "RAJU BUILDING MATERIAL"
+    - "RAM LAKHAN AND SONS"
+    - "SHIV SHAKTI TRADERS"
+    - "TARIKH BUILD. MATERIAL"
+  BASTI:
+    - "ADITYA ENTERPRISES"
+    - "GANGA SAGAR NANDLAL"
+    - "HARSH ENTERPRISES"
+    - "JAISWAL CONSTRUCTION"
+    - "K G N ENTERPRISES (SIS)"
+    - "KRISHNA PRASAD JAISWAL"
+    - "SINGH TRADERS"
+    - "SRI SAI TRADING CO"
+    - "VISHAL TRADING COMPANY"
+    - "YADAV TRADING COMPANY"
+  DEORIA:
+    - "ABHISHEK TRADING COMPANY"
+    - "JAISWAL AGENCY"
+    - "JAISWAL FERTILIZERS (SIS)"
+    - "KISHAN KHAD BHANDAR"
+    - "SANJAY ASSOCIATES"
+    - "VIRAT BUILDING MATERIAL"
+  GONDA:
+    - "AADITY BUILDERS"
+    - "AGRAWAL IRON AND URWAK TRADERS"
+    - "AZIZ AHMAD"
+    - "BHOLA AND BROTHERS"
+    - "CHATURVEDI BUILDING SOLUTION"
+    - "KESARWANI ASSOCIATE (SIS)"
+    - "MAURYA CEMENT STORE"
+    - "PANDEY ENTERPRISES"
+    - "VED PRAKASH AGRAWAL BUILDING MATERIAL"
+  GORAKHPUR:
+    - "BHARAT CEMENT SUPPLIER"
+    - "DEVENDRA KUMAR TRADERS"
+    - "JAGDAMBA TRADING COMPANY"
+    - "JAI BHARAT ENTERPRISES (SIS)"
+    - "JAI PRAKESH TRADERS"
+    - "KATYAYANI ENTERPRISES"
+    - "MAA DURGA TRADERS"
+    - "NAV DURGA STEELS"
+    - "NEW JAISWAL TRADING COMPANY"
+    - "NITESH CONSTRUCTION"
+    - "PALLAVI TRADERS"
+    - "RAUNIYAR BUILDING MATERIAL"
+    - "S K ENTERPRISES"
+    - "SATYAM TRADING CO."
+    - "SHREE NATH"
+  LUCKNOW:
+    - "SHIV TRADERS"
+  MAU:
+    - "BARANWAL CEMENT SUPPLIERS"
+    - "GANGA SAGAR NANDLAL"
+  SITAPUR:
+    - "JAI BHARAT ENTERPRISES (SIS)"
+  HARDOI:
+    - "SHIV TRADERS"
+
+quantity_tolerance: 0.01
+
+table:
+  cell_indices:
+    club_id: 2
+    destination: 5
+    quantity: 11
+    spi: 12
+    base_price: 13
+    company: 20

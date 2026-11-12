@@ -1,0 +1,626 @@
+import { useState, useEffect, useRef } from 'react';
+import { Settings, Rocket, Plus, MapPin } from 'lucide-react';
+import { useDataStore } from '@/store/dataStore';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DepotCard, DepotCardData } from '@/components/depot-card';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
+import { normalizeDepotForApi } from '@/constants/depots';
+import { setActiveBidJobId } from '@/api/liveBids';
+import { useZones, usePlants, useDepotsForPlant, useTonnageOptions } from '@/hooks/useMasterData';
+import { API_BASE } from '@/lib/apiClient';
+import { useBackendStatus } from '@/store/backendStatus';
+
+function getErrorMessage(error: unknown): string | null {
+  if (error instanceof Error) return error.message;
+  return error ? String(error) : null;
+}
+
+/** Poll GET /api/bid-job/{id} until the job finishes (async legacy or multiprocess). */
+async function pollBidJob(jobId: string): Promise<Record<string, unknown>> {
+  const deadline = Date.now() + 3_600_000;
+  while (Date.now() < deadline) {
+    const r = await fetch(`${API_BASE}/api/bid-job/${jobId}`);
+    const j = (await r.json()) as Record<string, unknown>;
+    if (!r.ok) {
+      throw new Error(
+        (typeof j.detail === 'string' ? j.detail : null) || `HTTP ${r.status}`,
+      );
+    }
+    const st = String(j.status ?? '');
+    if (st === 'completed' || st === 'failed' || st === 'partial_failed' || st === 'stopped') {
+      return j;
+    }
+    await new Promise((res) => setTimeout(res, 2000));
+  }
+  throw new Error('Job polling timed out');
+}
+
+export default function ControlPanel() {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { currentUser } = useDataStore();
+
+  // --- API-backed master data ---
+  const { data: zonesData, isLoading: zonesLoading, error: zonesError } = useZones();
+  const [selectedZone, setSelectedZone] = useState('');
+  const [selectedPlant, setSelectedPlant] = useState('');
+  const { data: plantsData, isLoading: plantsLoading, error: plantsError } = usePlants(selectedZone || undefined);
+  const { data: depotsData, error: depotsError } = useDepotsForPlant(selectedPlant || undefined);
+  const { data: tonnageData, error: tonnageError } = useTonnageOptions();
+
+  const zones = zonesData?.zones ?? [];
+  const plants = plantsData?.plants ?? [];
+  const availableDepots = depotsData?.depots ?? [];
+  const tonnageOptionsFormatted = (tonnageData?.tonnage_options ?? []).map((t) => ({
+    value: t.value,
+    label: t.label,
+  }));
+  const [depotCards, setDepotCards] = useState<DepotCardData[]>([]);
+  const [selectedDepotToAdd, setSelectedDepotToAdd] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [apiResults, setApiResults] = useState<Record<string, unknown> | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
+  // Lifecycle for the Start Bidding button: idle -> starting (POST in flight) -> running (job active) -> idle again on completion/failure.
+  const [bidState, setBidState] = useState<'idle' | 'starting' | 'running'>('idle');
+  // Synchronous guard against double-click/duplicate submit; state updates are async so a ref is required here.
+  const submitLockRef = useRef(false);
+  const backendReachable = useBackendStatus((s) => s.reachable);
+  const currentJobIdRef = useRef<string | null>(null);
+  // Toggle: whether to record screen/video when bid execution window is detected
+  const [recordOnBidStart, setRecordOnBidStart] = useState(false);
+  const [showBrowser, setShowBrowser] = useState(true); // false = headless, true = headed (default)
+
+  const isFleetUser = currentUser?.role === 'fleet';
+  const isVendorOrAdmin = currentUser?.role === 'vendor' || currentUser?.role === 'admin' || currentUser?.role === 'operator';
+
+  useEffect(() => {
+    if (isFleetUser) navigate('/dashboard/live-status');
+  }, [isFleetUser, navigate]);
+
+  if (isFleetUser) return null;
+
+  // Depots already filtered by plant via API; filter out already-added cards
+  const remainingDepots = availableDepots.filter(
+    (depot) => !depotCards.some((card) => card.depotId === depot.sap_depot_id || card.depotId === depot.code),
+  );
+
+  // Convert tonnage options to expected format (already done above)
+
+  // Calculate total vehicles across ALL depot cards
+  const totalVehicles = depotCards.reduce((sum, card) => 
+    sum + card.specifications.reduce((specSum, spec) => specSum + spec.tonnages.length, 0), 
+  0);
+
+  // Count cards with valid specifications
+  const validCards = depotCards.filter(card => card.specifications.length > 0);
+
+  // Validation checks
+  const isFormValid = selectedZone && selectedPlant && validCards.length > 0;
+  const usingMasterDataSnapshot = [
+    zonesData?.source,
+    plantsData?.source,
+    depotsData?.source,
+    tonnageData?.source,
+  ].includes('snapshot');
+  const masterDataSnapshotDate = [
+    zonesData?.snapshot_date,
+    plantsData?.snapshot_date,
+    depotsData?.snapshot_date,
+    tonnageData?.snapshot_date,
+  ].find((date): date is string => !!date);
+  const masterDataErrors = [
+    ['Zones', zonesError],
+    ['Plants', plantsError],
+    ['Depots', depotsError],
+    ['Tonnage options', tonnageError],
+  ].flatMap(([label, error]) => {
+    const message = getErrorMessage(error);
+    return message ? [`${label}: ${message}`] : [];
+  });
+
+  
+
+  const handleAddDepot = () => {
+    if (!selectedDepotToAdd) return;
+    const depot = availableDepots.find(
+      (d) => d.sap_depot_id === selectedDepotToAdd || d.code === selectedDepotToAdd,
+    );
+    if (!depot) return;
+    const depotId = depot.sap_depot_id || depot.code;
+    if (depotCards.some((card) => card.depotId === depotId)) {
+      toast({ title: 'Depot Already Added', description: `${depot.name} is already in your bid configuration.`, variant: 'destructive' });
+      return;
+    }
+    setDepotCards([...depotCards, {
+      depotId,
+      depotName: depot.name,
+      depotCode: depot.sap_depot_id || depot.code,
+      destinationDepotCode: depot.code,
+      specifications: [],
+    }]);
+    setSelectedDepotToAdd('');
+  };
+
+  // Update a depot card
+  const handleUpdateCard = (depotId: string, updatedCard: DepotCardData) => {
+    setDepotCards(cards => 
+      cards.map(c => c.depotId === depotId ? updatedCard : c)
+    );
+  };
+
+  // Remove a depot card
+  const handleRemoveCard = (depotId: string) => {
+    setDepotCards(cards => cards.filter(c => c.depotId !== depotId));
+  };
+
+  const handleStartBidding = () => {
+    // Re-entrancy guard first: blocks double-click/Enter-key/rapid-click duplicate submits
+    // and blocks starting a new job while one from this panel is still starting/running.
+    if (submitLockRef.current || bidState !== 'idle') {
+      return;
+    }
+
+    if (!useBackendStatus.getState().reachable) {
+      toast({
+        title: 'Server unreachable',
+        description: 'The bid was not submitted. Reconnect and try again.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (!isFormValid) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please add at least one depot with tonnage specifications',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const depots = depotCards.map(card => normalizeDepotForApi(card.depotName));
+    const desiredBids: Array<{ quantity: number; depot: string; destination: string }> = [];
+    depotCards.forEach((card) => {
+      const depotToken = normalizeDepotForApi(card.depotName);
+      card.specifications.forEach((spec) => {
+        spec.tonnages.forEach((t) => {
+          const qty = Number(t);
+          if (!Number.isFinite(qty) || qty <= 0) return;
+          const destination = spec.destination || '';
+          desiredBids.push({
+            quantity: qty,
+            depot: depotToken,
+            destination,
+          });
+        });
+      });
+    });
+    if (desiredBids.length === 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please select at least one tonnage',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const bidLegKeys = new Set<string>();
+    const hasDuplicateBidLeg = desiredBids.some((bid) => {
+      const destination = bid.destination.trim().toUpperCase();
+      if (!destination) return false;
+      const key = `${bid.depot}|${bid.quantity.toFixed(4)}|${destination}`;
+      if (bidLegKeys.has(key)) return true;
+      bidLegKeys.add(key);
+      return false;
+    });
+    if (hasDuplicateBidLeg) {
+      toast({
+        title: 'Duplicate bid configuration',
+        description: 'Choose a different listed destination for each bid with the same depot and tonnage.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Stable snapshot: the payload sent is exactly what was mapped at click time and
+    // is not affected by any state changes that happen while the request is in flight.
+    const payload = {
+      depots,
+      desired_bids: desiredBids,
+      record_on_bid_start: recordOnBidStart,
+      headless: !showBrowser,
+    };
+    const frontendRequestId = crypto.randomUUID();
+    console.log('[START CLICK]', {
+      frontendRequestId,
+      depots,
+      existingJobId: currentJobIdRef.current,
+    });
+    console.log('[FRONTEND BID START]', { frontendRequestId, payload });
+
+    submitLockRef.current = true;
+    setBidState('starting');
+    setLoading(true);
+    setApiError(null);
+    setApiResults(null);
+
+    fetch(`${API_BASE}/api/start-bid`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data?.detail || data?.error || `HTTP ${res.status}`);
+        }
+        const mode = data?.execution_mode as string | undefined;
+        const jid = data?.job_id as string | undefined;
+        console.log('[START RESPONSE]', { frontendRequestId, jobId: jid, status: data?.status });
+        if (jid) {
+          setActiveBidJobId(jid);
+          currentJobIdRef.current = jid;
+        }
+        setBidState('running');
+        if (
+          jid &&
+          (mode === 'legacy_async' || mode === 'multiprocess')
+        ) {
+          toast({
+            title: 'Job queued',
+            description: 'Waiting for automation to finish…',
+          });
+          const job = await pollBidJob(jid);
+          const results = job?.results as Record<string, unknown> | undefined;
+          setApiResults(results ?? (job as Record<string, unknown>));
+          toast({
+            title: 'Automation finished',
+            description: `Job status: ${String(job?.status ?? 'unknown')}`,
+          });
+        } else {
+          setApiResults((data?.results ?? null) as Record<string, unknown> | null);
+          toast({
+            title: 'API Triggered',
+            description: 'Parallel bidding request sent successfully.',
+          });
+        }
+      })
+      .catch((err) => {
+        console.error('[START ERROR]', { frontendRequestId, error: err });
+        setApiError(`Bid could not be started. ${String(err?.message || err)} (Request ID: ${frontendRequestId})`);
+        toast({
+          title: 'Bid could not be started.',
+          description: `${String(err?.message || err)} — Request ID: ${frontendRequestId}`,
+          variant: 'destructive',
+        });
+      })
+      .finally(() => {
+        setLoading(false);
+        setBidState('idle');
+        submitLockRef.current = false;
+        currentJobIdRef.current = null;
+      });
+  };
+
+  const handlePlantChange = (val: string) => {
+    setSelectedPlant(val);
+    setDepotCards([]);
+    setSelectedDepotToAdd('');
+  };
+
+  const handleZoneChange = (val: string) => {
+    setSelectedZone(val);
+    setSelectedPlant('');
+    setDepotCards([]);
+    setSelectedDepotToAdd('');
+  };
+
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="bg-card rounded-xl p-6 border border-border">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-primary/10 rounded-lg">
+            <Settings className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Control Panel</h1>
+            <p className="text-muted-foreground text-sm">
+              Create vehicle bids and manage active bidding
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Create Bids Form - Vendor/Admin Only */}
+      {isVendorOrAdmin && (
+        <div className="bg-card rounded-xl border border-border p-6">
+          {/* Zone & Plant Selection */}
+          <div className="grid gap-6 md:grid-cols-2 mb-6">
+            {/* Zone Selection */}
+            <div className="space-y-2">
+              <Label className="text-foreground font-medium">Zone *</Label>
+              <Select value={selectedZone} onValueChange={handleZoneChange}>
+                <SelectTrigger className="bg-background border-border h-12" disabled={zonesLoading}>
+                  <SelectValue placeholder={zonesLoading ? 'Loading zones...' : 'Select zone'} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  {zones.map((zone) => (
+                    <SelectItem key={zone.id} value={zone.id}>
+                      {zone.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Plant Selection */}
+            <div className="space-y-2">
+              <Label className="text-foreground font-medium">Plant *</Label>
+              <Select value={selectedPlant} onValueChange={handlePlantChange} disabled={!selectedZone}>
+                <SelectTrigger className="bg-background border-border h-12" disabled={!selectedZone || plantsLoading}>
+                  <SelectValue placeholder={plantsLoading ? 'Loading plants...' : 'Select plant'} />
+                </SelectTrigger>
+                <SelectContent className="bg-popover border-border z-50">
+                  {plants.map((plant) => (
+                    <SelectItem key={plant.id} value={plant.id}>
+                      {plant.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {masterDataErrors.length > 0 && (
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+            >
+              <p className="font-medium">Master data could not be loaded.</p>
+              <ul className="mt-1 list-inside list-disc">
+                {masterDataErrors.map((message) => <li key={message}>{message}</li>)}
+              </ul>
+            </div>
+          )}
+          {usingMasterDataSnapshot && (
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200"
+            >
+              <p className="font-medium">
+                Database connected; showing unverified backup master data from{' '}
+                {masterDataSnapshotDate ?? 'an undated snapshot'}.
+              </p>
+              <p className="mt-1">
+                Live bidding stays disabled until an authorized data owner verifies that the
+                zone, plant, depot, destination, and tonnage mappings are current.
+              </p>
+            </div>
+          )}
+          {zonesData && zones.length === 0 && !zonesLoading && masterDataErrors.length === 0 && (
+            <p className="mb-6 text-sm text-muted-foreground">
+              No active zones are configured in the master data.
+            </p>
+          )}
+
+          {/* Depot Cards Section */}
+          {selectedPlant && (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-foreground font-medium text-lg">Depot Configuration</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Add depots and configure tonnage + destination specifications for each
+                  </p>
+                </div>
+              </div>
+
+              {/* Add Depot Selector */}
+              <div className="flex items-end gap-3 p-4 bg-muted/30 border border-border rounded-lg">
+                <div className="flex-1 space-y-2">
+                  <Label className="text-sm text-foreground">Select Depot to Add</Label>
+                  <Select
+                    value={selectedDepotToAdd}
+                    onValueChange={setSelectedDepotToAdd}
+                    disabled={remainingDepots.length === 0}
+                  >
+                    <SelectTrigger className="bg-background border-border h-10">
+                      <SelectValue placeholder={remainingDepots.length === 0 ? 'All depots added' : 'Choose a depot...'} />
+                    </SelectTrigger>
+                    <SelectContent className="bg-popover border-border z-50">
+                      {remainingDepots.map((depot) => (
+                        <SelectItem key={depot.code} value={depot.sap_depot_id || depot.code}>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            {depot.name} – {depot.sap_depot_id || depot.code}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleAddDepot}
+                  disabled={!selectedDepotToAdd}
+                  className="h-10"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Depot
+                </Button>
+              </div>
+
+              {/* Depot Cards List */}
+              {depotCards.length > 0 ? (
+                <div className="space-y-4">
+                  {depotCards.map((card) => (
+                    <DepotCard
+                      key={card.depotId}
+                      data={card}
+                      tonnageOptions={tonnageOptionsFormatted}
+                      onUpdate={(updated) => handleUpdateCard(card.depotId, updated)}
+                      onRemove={() => handleRemoveCard(card.depotId)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 border border-dashed border-border rounded-lg bg-muted/20">
+                  <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                  <p className="text-muted-foreground text-sm">
+                    No depots added yet. Select a depot above to start configuring.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Summary Section */}
+          <div className="mt-6 space-y-4">
+            {/* Total Vehicles Summary */}
+            <div className="bg-muted/50 border border-border rounded-lg p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-medium text-foreground">Total Vehicle Bids</span>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Each vehicle = 1 independent bid (own rank, status, actions)
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">Vehicles</div>
+                  <span className={cn(
+                    'text-3xl font-bold',
+                    totalVehicles > 0 ? 'text-primary' : 'text-muted-foreground'
+                  )}>
+                    {totalVehicles}
+                  </span>
+                </div>
+              </div>
+
+              {/* Per-depot breakdown */}
+              {validCards.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <div className="text-xs font-medium text-muted-foreground mb-2">Breakdown by Depot:</div>
+                  <div className="space-y-2">
+                    {validCards.map((card) => {
+                      const depotVehicles = card.specifications.reduce(
+                        (sum, spec) => sum + spec.tonnages.length, 0
+                      );
+                      return (
+                        <div key={card.depotId} className="bg-background/50 rounded-lg p-3">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-foreground">
+                              {card.depotName} – {card.depotCode}
+                            </span>
+                            <span className="font-bold text-primary">
+                              {depotVehicles} vehicle(s)
+                            </span>
+                          </div>
+                          <div className="space-y-1">
+                            {card.specifications.map((spec, idx) => (
+                              <div key={spec.id} className="flex items-center justify-between text-xs text-muted-foreground pl-2">
+                                <span>
+                                  {spec.destination || '(No destination)'}: {' '}
+                                  {Array.from(
+                                    spec.tonnages.reduce((map, t) => {
+                                      map.set(t, (map.get(t) || 0) + 1);
+                                      return map;
+                                    }, new Map<number, number>())
+                                  ).map(([t, c]) => c > 1 ? `${t}T×${c}` : `${t}T`).join(', ')}
+                                </span>
+                                <span>{spec.tonnages.length} truck(s)</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Browser visibility + Recording toggles */}
+            <div className="flex items-center gap-3 mb-2">
+              <input
+                id="showBrowser"
+                type="checkbox"
+                checked={showBrowser}
+                onChange={(e) => setShowBrowser(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="showBrowser" className="text-sm text-foreground">
+                Show browser window (headed mode)
+              </label>
+            </div>
+            <div className="flex items-center gap-3 mb-3">
+              <input
+                id="recordOnBidStart"
+                type="checkbox"
+                checked={recordOnBidStart}
+                onChange={(e) => setRecordOnBidStart(e.target.checked)}
+                className="h-4 w-4"
+              />
+              <label htmlFor="recordOnBidStart" className="text-sm text-foreground">
+                Record video when bid execution window opens
+              </label>
+            </div>
+
+            {/* Start Bidding Button */}
+            <Button 
+              onClick={handleStartBidding}
+              className="w-full h-14 text-lg font-semibold bg-primary hover:bg-primary/90"
+              disabled={!isFormValid || bidState !== 'idle' || usingMasterDataSnapshot || !backendReachable}
+            >
+              <Rocket className="h-5 w-5 mr-2" />
+              {!backendReachable && bidState === 'idle'
+                ? 'Server unreachable'
+                : bidState === 'starting'
+                ? 'Starting Bid...'
+                : bidState === 'running'
+                ? 'Bid Running'
+                : usingMasterDataSnapshot
+                ? 'Master-data verification required'
+                : `Start Bidding (${totalVehicles} Vehicle${totalVehicles !== 1 ? 's' : ''})`}
+            </Button>
+            {!isFormValid && (
+              <p className="text-center text-xs text-muted-foreground">
+                {!selectedZone || !selectedPlant 
+                  ? 'Please select Zone and Plant first'
+                  : 'Please add at least one depot with tonnage specifications'
+                }
+              </p>
+            )}
+
+            {loading && (
+              <p className="text-center text-sm text-muted-foreground">Processing bids...</p>
+            )}
+
+            {apiError && (
+              <p className="text-center text-sm text-destructive">{apiError}</p>
+            )}
+
+            {apiResults && (
+              <pre className="text-xs bg-muted/30 border border-border rounded-md p-3 overflow-auto max-h-64">
+                {JSON.stringify(apiResults, null, 2)}
+              </pre>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

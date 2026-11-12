@@ -1,0 +1,38 @@
+# Unified Backend Automation — Dependencies
+# See ARCHITECTURE.md and MIGRATION_ROADMAP.md
+#
+# Installed on clone: pip install -r requirements.txt
+# Run API: uvicorn backend_server:app --host 127.0.0.1 --port 8000
+#   or: python backend_server.py
+
+# --- Original automation stack (unchanged) ---
+selenium>=4.21.0
+webdriver-manager>=4.0.0
+beautifulsoup4>=4.12.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# --- HTTP API (backend_server.py) ---
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+pydantic>=2.0.0
+# Required by Pydantic when evaluating postponed union annotations on Python 3.9.
+eval-type-backport>=0.2.0
+python-multipart>=0.0.9
+
+# --- Browser driver (src/driver_factory.py) ---
+# undetected-chromedriver removed: broken on Python 3.12+ (distutils removed)
+# Replaced with webdriver-manager (auto-downloads matching chromedriver) + selenium-stealth
+selenium-stealth>=1.0.6
+
+# --- Windows window rotation (src/window_rotation.py) ---
+pywin32>=306; sys_platform == "win32"
+
+
+# undetected-chromedriver removed: broken on Python 3.12+ (distutils removed)
+# Replaced with webdriver-manager (auto-downloads matching chromedriver) + selenium-stealth
+selenium-stealth>=1.0.6
+# Optional DB-backed JobStore (MySQL via SQLAlchemy)
+SQLAlchemy>=2.0.0
+PyMySQL>=1.0.2
+psutil>=5.9.0

@@ -1,0 +1,43 @@
+{
+  "name": "e-bidding-unified",
+  "displayName": "E-Bidding Unified",
+  "description": "Unified E-Bidding system with FastAPI backend and React frontend",
+  "version": "1.0.0",
+  "knowledgeBase": [
+    {
+      "name": "Project Context",
+      "path": ".kiro/steering/project-context.md",
+      "description": "Essential project context for E-Bidding unified system"
+    },
+    {
+      "name": "Project Knowledge",
+      "path": "PROJECT_KNOWLEDGE.md",
+      "description": "Detailed project knowledge documentation"
+    }
+  ],
+  "defaultLanguage": "typescript",
+  "api": {
+    "baseURL": "http://127.0.0.1:8000",
+    "timeout": 30000
+  },
+  "environments": {
+    "development": {
+      "backendPort": 8000,
+      "frontendPort": 5173,
+      "backendDebug": true
+    }
+  },
+  "launch": {
+    "backend": {
+      "command": "uvicorn backend_server:app",
+      "args": ["--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "cwd": "backend",
+      "envFile": ".env"
+    },
+    "frontend": {
+      "command": "npm run dev",
+      "cwd": "frontend",
+      "envFile": ".env"
+    }
+  }
+}

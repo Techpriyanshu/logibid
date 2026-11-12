@@ -1,0 +1,48 @@
+# Local environments and credentials
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!*.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+.venv*/
+venv/
+
+# Generated dependencies, builds, caches, and local data
+node_modules/
+__pycache__/
+*.py[cod]
+dist/
+logs/
+log/
+runtime-logs/
+screenshots/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+*.bak*
+.DS_Store
+__MACOSX/
+
+# Archives containing environment files
+/Code/backend.zip
+/Code/frontend.zip
+/E-BIDDING-UNIFIED-TO-SERVER.zip
+
+# Files requiring credential sanitization before publication
+/Code/PROJECT_KNOWLEDGE.md
+/E-BIDDING-UNIFIED-TO-SERVER/PROJECT_KNOWLEDGE.md
+/Code/frontend/src/store/adminStore.ts
+/Code/frontend/src/store/dataStore.ts
+/Code/frontend_01_Sep_Running/src/store/adminStore.ts
+/Code/frontend_01_Sep_Running/src/store/dataStore.ts
+/Code/backend/data/
+/Code/backend_01_Sep_Running/data/
+/Data/Dump20260821.sql
+/E-BIDDING-UNIFIED-TO-SERVER/ebid.sql
+/ebid.sql
